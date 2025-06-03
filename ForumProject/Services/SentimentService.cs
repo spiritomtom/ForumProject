@@ -1,7 +1,6 @@
-﻿using System.Net.Http;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using ForumProject.MLModels;
 
 namespace ForumProject.Services
 {
@@ -16,20 +15,15 @@ namespace ForumProject.Services
 
         public async Task<bool> IsToxicAsync(string comment)
         {
-            var payload = new { text = comment };
-            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var input = new InputModel { Text = comment };
+            var content = new StringContent(JsonSerializer.Serialize(input), Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("http://localhost:5000/analyze", content); // or actual NAS-BERT endpoint
+            var response = await _httpClient.PostAsync("http://localhost:5000/analyze", content);
             if (!response.IsSuccessStatusCode) return false;
 
             var resultJson = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<SentimentResult>(resultJson);
-            return result?.IsToxic ?? false;
+            var result = JsonSerializer.Deserialize<OutputModel>(resultJson);
+            return result?.PredictedLabel ?? false;
         }
-    }
-
-    public class SentimentResult
-    {
-        public bool IsToxic { get; set; }
     }
 }

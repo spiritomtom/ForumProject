@@ -2,13 +2,9 @@
 using ForumProject.Models;
 using ForumProject.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ForumProject.Controllers
 {
@@ -17,14 +13,12 @@ namespace ForumProject.Controllers
     public class CommentController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly SentimentService _sentiment;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SentimentService _sentimentService;
 
-        public CommentController(ApplicationDbContext context, SentimentService sentiment, UserManager<ApplicationUser> userManager)
+        public CommentController(ApplicationDbContext context, SentimentService sentimentService)
         {
             _context = context;
-            _sentiment = sentiment;
-            _userManager = userManager;
+            _sentimentService = sentimentService;
         }
 
         [HttpPost]
@@ -32,7 +26,10 @@ namespace ForumProject.Controllers
         public async Task<IActionResult> PostComment([FromBody] Comment model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isToxic = await _sentiment.IsToxicAsync(model.Content);
+            if (userId == null)
+                return Unauthorized();
+
+            var isToxic = await _sentimentService.IsToxicAsync(model.Content);
 
             var comment = new Comment
             {

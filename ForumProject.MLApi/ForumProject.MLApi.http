@@ -1,0 +1,6 @@
+@ForumProject.MLApi_HostAddress = http://localhost:5048
+
+GET {{ForumProject.MLApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
