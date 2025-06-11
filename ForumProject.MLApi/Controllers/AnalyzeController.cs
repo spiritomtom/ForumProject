@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ForumProject.MLModels;
+﻿using ForumProject.MLApi.MLModels;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.ML;
+using System;
+using System.IO;
 
 namespace ForumProject.MLApi.Controllers
 {
@@ -10,13 +12,14 @@ namespace ForumProject.MLApi.Controllers
     {
         private static readonly object _lock = new object();
         private static PredictionEngine<InputModel, OutputModel> _engine;
+        private static string MLNetModelPath = Path.GetFullPath("MLModel.mlnet");
 
         static AnalyzeController()
         {
             var mlContext = new MLContext();
             lock (_lock)
             {
-                var model = mlContext.Model.Load("MLModel.zip", out var _);
+                var model = mlContext.Model.Load(MLNetModelPath, out var _);
                 _engine = mlContext.Model.CreatePredictionEngine<InputModel, OutputModel>(model);
             }
         }

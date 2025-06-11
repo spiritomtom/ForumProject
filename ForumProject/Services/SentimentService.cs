@@ -1,29 +1,28 @@
-﻿using System.Text;
-using System.Text.Json;
-using ForumProject.MLModels;
-
-namespace ForumProject.Services
+﻿public class SentimentService
 {
-    public class SentimentService
+    private readonly HttpClient _httpClient;
+
+    public SentimentService(IHttpClientFactory httpClientFactory)
     {
-        private readonly HttpClient _httpClient;
+        _httpClient = httpClientFactory.CreateClient();
+        _httpClient.BaseAddress = new Uri("http://localhost:5048/"); // MLApi URL
+    }
 
-        public SentimentService(IHttpClientFactory httpClientFactory)
-        {
-            _httpClient = httpClientFactory.CreateClient();
-        }
+    public async Task<bool> IsToxicAsync(string comment)
+    {
+        var input = new { Text = comment };
+        var response = await _httpClient.PostAsJsonAsync("analyze", input);
+        if (!response.IsSuccessStatusCode)
+            throw new Exception("MLApi failed");
 
-        public async Task<bool> IsToxicAsync(string comment)
-        {
-            var input = new InputModel { Text = comment };
-            var content = new StringContent(JsonSerializer.Serialize(input), Encoding.UTF8, "application/json");
+        var json = await response.Content.ReadFromJsonAsync<AnalyzeResponse>();
+        return json.PredictedLabel;
+    }
 
-            var response = await _httpClient.PostAsync("http://localhost:5000/analyze", content);
-            if (!response.IsSuccessStatusCode) return false;
-
-            var resultJson = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<OutputModel>(resultJson);
-            return result?.PredictedLabel ?? false;
-        }
+    private class AnalyzeResponse
+    {
+        public bool PredictedLabel { get; set; }
+        public float Probability { get; set; }
+        public float Score { get; set; }
     }
 }

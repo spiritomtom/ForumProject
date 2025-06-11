@@ -1,5 +1,5 @@
-﻿using Microsoft.ML;
-using ForumProject.MLModels;
+﻿using ForumProject.MLApi.MLModels;
+using Microsoft.ML;
 
 namespace ForumProject.MLApi.Services
 {

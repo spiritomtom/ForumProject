@@ -1,14 +1,13 @@
-﻿namespace ForumProject.MLModels
+﻿using Microsoft.ML.Data;
+
+namespace ForumProject.MLApi.MLModels
 {
     public class OutputModel
     {
-        // The predicted label (e.g. toxic or not)
+        [ColumnName("PredictedLabel")]
         public bool PredictedLabel { get; set; }
 
-        // The probability of the prediction being true
-        public float Probability { get; set; }
-
-        // The raw score from the model
-        public float Score { get; set; }
+        [ColumnName("Score")]
+        public float[] Score { get; set; }
     }
 }

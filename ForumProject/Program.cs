@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ForumProject.Data;
 using ForumProject.Models;
-using ForumProject.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +20,16 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<SentimentService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // If using cookie-based auth
+    });
+});
 var app = builder.Build();
 
 // Seed Roles
@@ -42,6 +51,7 @@ async Task SeedRoles(RoleManager<IdentityRole> roleManager)
     }
 }
 
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapDefaultControllerRoute();

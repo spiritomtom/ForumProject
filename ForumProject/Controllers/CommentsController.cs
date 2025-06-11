@@ -1,6 +1,5 @@
 ﻿using ForumProject.Data;
 using ForumProject.Models;
-using ForumProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,13 +22,13 @@ namespace ForumProject.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> PostComment([FromBody] Comment model)
+        public async Task<IActionResult> PostComment([FromBody] CommentData model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            var isToxic = await _sentimentService.IsToxicAsync(model.Content);
+            var isToxic = await _sentimentService.IsToxicAsync(model.Content).ConfigureAwait(false);
 
             var comment = new Comment
             {
@@ -66,6 +65,13 @@ namespace ForumProject.Controllers
                 .ToListAsync();
 
             return Ok(comments);
+        }
+
+        [HttpPost("analyze")]
+        public async Task<OkObjectResult> Analyze([FromBody] string comment)
+        {
+            bool isToxic = await _sentimentService.IsToxicAsync(comment).ConfigureAwait(false);
+            return Ok(new { isToxic });
         }
     }
 }
