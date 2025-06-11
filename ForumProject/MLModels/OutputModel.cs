@@ -3,12 +3,12 @@
     public class OutputModel
     {
         // The predicted label (e.g. toxic or not)
-        public bool PredictedLabel { get; set; }
+        public string PredictedLabel { get; set; }
 
         // The probability of the prediction being true
-        public float Probability { get; set; }
+        public string Probability { get; set; }
 
         // The raw score from the model
-        public float Score { get; set; }
+        public string Score { get; set; }
     }
 }

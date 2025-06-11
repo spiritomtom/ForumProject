@@ -9,6 +9,6 @@ namespace ForumProject.MLApi.MLModels
         public string Text { get; set; }
 
         [LoadColumn(1)]
-        public uint Label { get; set; }
+        public string Label { get; set; }
     }
 }

@@ -8,10 +8,6 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-string dataPath = "D:\\School\\ForumProject\\ForumProject.MLApi\\sentiment_data.csv";
-string modelPath = "MLModel.mlnet";
-
-MlModelTrainer.TrainAndSaveModel(dataPath, modelPath);
 app.MapControllers();
 
 app.Run();

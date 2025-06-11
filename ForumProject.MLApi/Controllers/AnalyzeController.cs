@@ -19,7 +19,7 @@ namespace ForumProject.MLApi.Controllers
             var mlContext = new MLContext();
             lock (_lock)
             {
-                var model = mlContext.Model.Load(MLNetModelPath, out var _);
+                var model = mlContext.Model.Load(MLNetModelPath, out var inputSchema);
                 _engine = mlContext.Model.CreatePredictionEngine<InputModel, OutputModel>(model);
             }
         }

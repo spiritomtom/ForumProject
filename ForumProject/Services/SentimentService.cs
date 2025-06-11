@@ -1,4 +1,6 @@
-﻿public class SentimentService
+﻿using ForumProject.MLModels;
+
+public class SentimentService
 {
     private readonly HttpClient _httpClient;
 
@@ -10,19 +12,12 @@
 
     public async Task<bool> IsToxicAsync(string comment)
     {
-        var input = new { Text = comment };
+        var input = new { Text = comment, Label = "0"};
         var response = await _httpClient.PostAsJsonAsync("analyze", input);
         if (!response.IsSuccessStatusCode)
             throw new Exception("MLApi failed");
 
-        var json = await response.Content.ReadFromJsonAsync<AnalyzeResponse>();
-        return json.PredictedLabel;
-    }
-
-    private class AnalyzeResponse
-    {
-        public bool PredictedLabel { get; set; }
-        public float Probability { get; set; }
-        public float Score { get; set; }
+        var json = await response.Content.ReadFromJsonAsync<OutputModel>();
+        return bool.Parse(json.PredictedLabel);
     }
 }
