@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+﻿using ForumProject.Models;
 using Microsoft.AspNetCore.Authorization;
-using ForumProject.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ForumProject.Controllers
 {
     [Authorize(Roles = "Admin")]
-    public class AdminController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AdminController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -17,26 +21,14 @@ namespace ForumProject.Controllers
             _roleManager = roleManager;
         }
 
+        [HttpGet("users")]
         public IActionResult Users()
         {
             var users = _userManager.Users.ToList();
-            return View(users);
+            return Ok(users);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ToggleStatus(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
-            {
-                user.IsActive = !user.IsActive;
-                await _userManager.UpdateAsync(user);
-            }
-
-            return RedirectToAction("Users");
-        }
-
-        [HttpPost]
+        [HttpPost("toggleModerator/{id}")]
         public async Task<IActionResult> ToggleModerator(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -48,9 +40,11 @@ namespace ForumProject.Controllers
                     await _userManager.RemoveFromRoleAsync(user, "Moderator");
                 else
                     await _userManager.AddToRoleAsync(user, "Moderator");
+
+                return Ok(new { message = "Role updated successfully" });
             }
 
-            return RedirectToAction("Users");
+            return NotFound("User not found");
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using ForumProject.MLApi.MLModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ML;
-using System;
-using System.IO;
 
 namespace ForumProject.MLApi.Controllers
 {
@@ -10,16 +8,16 @@ namespace ForumProject.MLApi.Controllers
     [Route("[controller]")]
     public class AnalyzeController : ControllerBase
     {
-        private static readonly object _lock = new object();
+        private static readonly object Lock = new object();
         private static PredictionEngine<InputModel, OutputModel> _engine;
-        private static string MLNetModelPath = Path.GetFullPath("MLModel.mlnet");
+        private static readonly string MlNetModelPath = Path.GetFullPath("MLModel.mlnet");
 
         static AnalyzeController()
         {
             var mlContext = new MLContext();
-            lock (_lock)
+            lock (Lock)
             {
-                var model = mlContext.Model.Load(MLNetModelPath, out var inputSchema);
+                var model = mlContext.Model.Load(MlNetModelPath, out _);
                 _engine = mlContext.Model.CreatePredictionEngine<InputModel, OutputModel>(model);
             }
         }
@@ -27,11 +25,18 @@ namespace ForumProject.MLApi.Controllers
         [HttpPost]
         public ActionResult<OutputModel> Post([FromBody] InputModel input)
         {
-            if (string.IsNullOrWhiteSpace(input?.Text))
+            if (string.IsNullOrWhiteSpace(input.Text))
                 return BadRequest();
 
             var prediction = _engine.Predict(input);
-            return Ok(prediction);
+
+            var result = new
+            {
+                prediction.PredictedLabel,
+                Scores = prediction.Score
+            };
+
+            return Ok(result);
         }
     }
 }

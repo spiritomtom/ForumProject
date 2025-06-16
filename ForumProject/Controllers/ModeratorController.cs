@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ForumProject.Data;
 using Microsoft.AspNetCore.Authorization;
-using ForumProject.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ForumProject.Controllers
 {
     [Authorize(Roles = "Moderator")]
-    public class ModeratorController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ModeratorController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
@@ -14,36 +17,42 @@ namespace ForumProject.Controllers
             _context = context;
         }
 
-        public IActionResult Pending()
+        [HttpGet("flagged")]
+        public async Task<IActionResult> GetFlaggedComments()
         {
-            var comments = _context.Comments.Where(c => !c.IsApproved).ToList();
-            return View(comments);
+            var comments = await _context.Comments
+                .Where(c => c.IsFlagged && !c.IsApproved)
+                .Include(c => c.User)
+                .ToListAsync();
+
+            return Ok(comments);
         }
 
-        [HttpPost]
-        public IActionResult Approve(int id)
+        [HttpPost("approve/{id}")]
+        public async Task<IActionResult> ApproveComment(int id)
         {
-            var comment = _context.Comments.Find(id);
-            if (comment != null)
-            {
-                comment.IsApproved = true;
-                _context.SaveChanges();
-            }
+            var comment = await _context.Comments.FindAsync(id);
+            if (comment == null)
+                return NotFound();
 
-            return RedirectToAction("Pending");
+            comment.IsApproved = true;
+            comment.IsFlagged = false;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Comment approved and published." });
         }
 
-        [HttpPost]
-        public IActionResult Delete(int id)
+        [HttpPost("delete/{id}")]
+        public async Task<IActionResult> DeleteComment(int id)
         {
-            var comment = _context.Comments.Find(id);
-            if (comment != null)
-            {
-                _context.Comments.Remove(comment);
-                _context.SaveChanges();
-            }
+            var comment = await _context.Comments.FindAsync(id);
+            if (comment == null)
+                return NotFound();
 
-            return RedirectToAction("Pending");
+            _context.Comments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Comment deleted." });
         }
     }
 }
