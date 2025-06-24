@@ -18,11 +18,11 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
     }
 
-    // POST: api/Auth/register
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
         var user = new ApplicationUser
         {
@@ -46,11 +46,11 @@ public class AuthController : ControllerBase
         return BadRequest(ModelState);
     }
 
-    // POST: api/Auth/login
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
         var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
@@ -60,7 +60,6 @@ public class AuthController : ControllerBase
         return Unauthorized(new { message = "Invalid login attempt" });
     }
 
-    // POST: api/Auth/logout
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -68,7 +67,6 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Logged out" });
     }
 
-    // GET: api/Auth/me
     [HttpGet("me")]
     public IActionResult Me()
     {

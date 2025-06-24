@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { register } from "../services/api";
 
 export default function Register({ onRegister }: { onRegister: () => void }) {
@@ -10,11 +10,15 @@ export default function Register({ onRegister }: { onRegister: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await register(username, email, password);
+      await register(username, email, password, "User"); // Добавяне на Role с стойност "User"
       setMsg("Registered! Please log in.");
       onRegister();
-    } catch {
-      setMsg("Failed to register.");
+    } catch (err: any) {
+      if (err.response && err.response.data) {
+        setMsg(JSON.stringify(err.response.data));
+      } else {
+        setMsg("Failed to register.");
+      }
     }
   };
 
