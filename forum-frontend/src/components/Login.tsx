@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { login } from "../services/api";
 
 export default function Login({ onLogin }: { onLogin: () => void }) {
@@ -11,7 +11,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     try {
       await login(username, password);
       setMsg("Success!");
-      onLogin();
+      onLogin(); // Trigger refresh after login
     } catch {
       setMsg("Invalid login.");
     }

@@ -15,16 +15,23 @@ export default function App() {
   const [showModeration, setShowModeration] = useState(false);
 
   useEffect(() => {
-    api.get("auth/me")
-      .then(response => {
-        setLoggedIn(true);
-        setRoles(response.data.roles); // Simplified role mapping
-      })
-      .catch(error => {
-        console.error("Error fetching user info:", error);
-        setLoggedIn(false);
-      });
+    fetchUserInfo(); // Fetch user info on initial load
   }, []);
+
+  const fetchUserInfo = async () => {
+    try {
+      const response = await api.get("auth/me");
+      setLoggedIn(true);
+      setRoles(response.data.roles); // Set roles from response
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      setLoggedIn(false);
+    }
+  };
+
+  const handleLogin = () => {
+    fetchUserInfo(); // Fetch user info after login
+  };
 
   const isModerator = roles.includes("Moderator");
   const isAdmin = roles.includes("Admin");
@@ -34,7 +41,7 @@ export default function App() {
       <Register onRegister={() => setShowRegister(false)} />
     ) : (
       <>
-        <Login onLogin={() => setLoggedIn(true)} />
+        <Login onLogin={handleLogin} />
         <button onClick={() => setShowRegister(true)}>Register</button>
       </>
     );

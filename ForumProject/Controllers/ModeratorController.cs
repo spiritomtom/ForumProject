@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ForumProject.Controllers
 {
-    [Authorize(Roles = "Moderator")]
+    [Authorize(Roles = "Moderator, Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class ModeratorController : ControllerBase

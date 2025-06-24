@@ -22,29 +22,51 @@ namespace ForumProject.Controllers
         }
 
         [HttpGet("users")]
-        public IActionResult Users()
+        public async Task<IActionResult> Users()
         {
             var users = _userManager.Users.ToList();
-            return Ok(users);
+            var userRoles = new List<UserWithRolesViewModel>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                userRoles.Add(new UserWithRolesViewModel
+                {
+                    User = user,
+                    Roles = roles
+                });
+            }
+
+            return Ok(userRoles);
         }
 
         [HttpPost("toggleModerator/{id}")]
         public async Task<IActionResult> ToggleModerator(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
+            if (user == null)
+                return NotFound("User not found");
+
+            // Ensure the Moderator role exists
+            if (!await _roleManager.RoleExistsAsync("Moderator"))
             {
-                var isModerator = await _userManager.IsInRoleAsync(user, "Moderator");
-
-                if (isModerator)
-                    await _userManager.RemoveFromRoleAsync(user, "Moderator");
-                else
-                    await _userManager.AddToRoleAsync(user, "Moderator");
-
-                return Ok(new { message = "Role updated successfully" });
+                var result = await _roleManager.CreateAsync(new IdentityRole("Moderator"));
+                if (!result.Succeeded)
+                    return BadRequest("Could not create Moderator role");
             }
 
-            return NotFound("User not found");
+            var isModerator = await _userManager.IsInRoleAsync(user, "Moderator");
+
+            IdentityResult roleResult;
+            if (isModerator)
+                roleResult = await _userManager.RemoveFromRoleAsync(user, "Moderator");
+            else
+                roleResult = await _userManager.AddToRoleAsync(user, "Moderator");
+
+            if (!roleResult.Succeeded)
+                return BadRequest(roleResult.Errors);
+
+            return Ok(new { message = "Role updated successfully" });
         }
     }
 }
