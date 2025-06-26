@@ -5,16 +5,13 @@ namespace ForumProject.MLApi.Services
 {
     public class SentimentPredictionService
     {
-        private readonly MLContext _mlContext;
-        private readonly ITransformer _model;
         private readonly PredictionEngine<InputModel, OutputModel> _predictionEngine;
 
         public SentimentPredictionService()
         {
-            _mlContext = new MLContext();
-            // Load your pre-trained model file
-            _model = _mlContext.Model.Load("MLModel.zip", out var modelInputSchema);
-            _predictionEngine = _mlContext.Model.CreatePredictionEngine<InputModel, OutputModel>(_model);
+            var mlContext = new MLContext();
+            var model = mlContext.Model.Load("MLModel.zip", out var modelInputSchema);
+            _predictionEngine = mlContext.Model.CreatePredictionEngine<InputModel, OutputModel>(model);
         }
 
         public OutputModel Predict(string text)
